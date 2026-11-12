@@ -26,10 +26,6 @@
     home: 'beranda', siswa: 'beranda/siswa', alumni: 'beranda/alumni', guru: 'beranda/guru',
     tendik: 'beranda/tendik', nilai: 'beranda/nilai', laporan: 'beranda/laporan', settings: 'beranda/pengaturan'
   };
-  var TITLE = {
-    home: 'Beranda', siswa: 'Siswa Aktif', alumni: 'Alumni', guru: 'Guru', tendik: 'Tendik',
-    nilai: 'Nilai', laporan: 'Laporan', settings: 'Pengaturan'
-  };
   var PATH2VIEW = {};
   Object.keys(VIEW2PATH).forEach(function (v) { PATH2VIEW[VIEW2PATH[v]] = v; });
 
@@ -45,9 +41,6 @@
   var frame = document.getElementById('app');
   var current = viewOf(rel());
   frame.src = GAS + (current ? '?v=' + encodeURIComponent(current) : '');
-  setTitle(current);
-
-  function setTitle(v) { document.title = v && TITLE[v] ? TITLE[v] + ' · e-induk' : 'e-induk'; }
 
   window.addEventListener('message', function (e) {
     var d = e.data, host = '';
@@ -57,7 +50,6 @@
     if (path === undefined) return;
     var url = BASE + path;
     current = d.view === 'login' ? '' : d.view;
-    setTitle(current);
     if (location.pathname === url) return;
     // dari halaman masuk ke beranda: ganti, jangan menambah riwayat
     if (location.pathname.replace(/\/+$/, '/') === BASE) history.replaceState(null, '', url);
@@ -69,7 +61,6 @@
     var v = viewOf(rel());
     if (v === current) return;
     current = v;
-    setTitle(v);
     frame.src = GAS + (v ? '?v=' + encodeURIComponent(v) : '');
   });
 })();
