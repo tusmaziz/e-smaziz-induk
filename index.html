@@ -1,44 +1,78 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>e-induk</title>
-  <link rel="icon"type="image/png" href="Logo_Al_Aziz_No_Bg.png"/>
-  <style>
-    html, body {
-      margin: 0;
-      padding: 0;
-      width: 100%;
-      height: 100%;
-      background-color: #eee;
-      overflow: hidden; /* Mencegah scroll ganda */
-    }
-
-    .iframe-container {
-      width: 100%;
-      height: 100dvh; /* Menggunakan dvh agar pas di mobile browser */
-      overflow: hidden;
-    }
-
-    iframe {
-      display: block;
-      width: 100%;
-      height: 100%;
-      border: none;
-    }
-  </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>e-induk</title>
+<link rel="icon" type="image/png" href="/e-smaziz-induk/favicon.png">
+<style>
+  html, body { margin: 0; height: 100%; background: #fff; }
+  iframe { display: block; width: 100%; height: 100%; border: 0; }
+</style>
 </head>
 <body>
-  <div class="iframe-container">
-    <iframe
-      id="app" src="https://script.google.com/macros/s/AKfycby0_H8dVfGJwrUQlU8gvDLSYAB_a8BMUUkl_sa-nqqw4V3AmBB4YBp8LDcwQBNEElTadw/exec"
-      scrolling="yes"
-      allowfullscreen="true"
-      webkitallowfullscreen="true"
-      mozallowfullscreen="true"
-      allow="fullscreen; camera; microphone; display-capture; geolocation;">
-    </iframe>
-  </div>
+<iframe id="app" title="e-induk SMA Al Aziz Bangil" allow="clipboard-write; fullscreen"></iframe>
+<script>
+(function () {
+  // Alamat web app Apps Script (deploy "Web app").
+  var GAS = 'https://script.google.com/macros/s/AKfycby0_H8dVfGJwrUQlU8gvDLSYAB_a8BMUUkl_sa-nqqw4V3AmBB4YBp8LDcwQBNEElTadw/exec';
+  // Folder situs ini di GitHub Pages (nama repo).
+  var BASE = '/e-smaziz-induk/';
+  // Hanya terima pesan dari Google.
+  var ALLOWED = /(^|\.)(googleusercontent\.com|google\.com)$/;
+
+  // menu aplikasi -> alamat
+  var VIEW2PATH = {
+    home: 'beranda', siswa: 'beranda/siswa', alumni: 'beranda/alumni', guru: 'beranda/guru',
+    tendik: 'beranda/tendik', nilai: 'beranda/nilai', laporan: 'beranda/laporan', settings: 'beranda/pengaturan'
+  };
+  var TITLE = {
+    home: 'Beranda', siswa: 'Siswa Aktif', alumni: 'Alumni', guru: 'Guru', tendik: 'Tendik',
+    nilai: 'Nilai', laporan: 'Laporan', settings: 'Pengaturan'
+  };
+  var PATH2VIEW = {};
+  Object.keys(VIEW2PATH).forEach(function (v) { PATH2VIEW[VIEW2PATH[v]] = v; });
+
+  // Dibuka lewat alamat langsung (halaman 404.html mengarahkan ke sini)
+  try {
+    var saved = sessionStorage.getItem('spa-path');
+    if (saved) { sessionStorage.removeItem('spa-path'); history.replaceState(null, '', saved); }
+  } catch (e) {}
+
+  function rel() { return location.pathname.slice(BASE.length).replace(/^\/+|\/+$/g, ''); }
+  function viewOf(path) { return PATH2VIEW[path] || ''; }
+
+  var frame = document.getElementById('app');
+  var current = viewOf(rel());
+  frame.src = GAS + (current ? '?v=' + encodeURIComponent(current) : '');
+  setTitle(current);
+
+  function setTitle(v) { document.title = v && TITLE[v] ? TITLE[v] + ' · e-induk' : 'e-induk'; }
+
+  window.addEventListener('message', function (e) {
+    var d = e.data, host = '';
+    try { host = new URL(e.origin).hostname; } catch (x) { return; }
+    if (!ALLOWED.test(host) || !d || d.app !== 'induk') return;
+    var path = d.view === 'login' ? '' : VIEW2PATH[d.view];
+    if (path === undefined) return;
+    var url = BASE + path;
+    current = d.view === 'login' ? '' : d.view;
+    setTitle(current);
+    if (location.pathname === url) return;
+    // dari halaman masuk ke beranda: ganti, jangan menambah riwayat
+    if (location.pathname.replace(/\/+$/, '/') === BASE) history.replaceState(null, '', url);
+    else history.pushState(null, '', url);
+  });
+
+  // tombol kembali / maju di browser
+  window.addEventListener('popstate', function () {
+    var v = viewOf(rel());
+    if (v === current) return;
+    current = v;
+    setTitle(v);
+    frame.src = GAS + (v ? '?v=' + encodeURIComponent(v) : '');
+  });
+})();
+</script>
 </body>
 </html>
